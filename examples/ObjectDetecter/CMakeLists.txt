@@ -23,7 +23,7 @@ include_directories(/usr/local/include/google/tensorflow
 
 link_directories(/usr/local/lib)
 
-add_executable(ObjectDetecter ObjectDetectThread.cc main.cc ObjectDetectThread.h)
+add_executable(ObjectDetecter ObjectDetecter.cc main.cc ObjectDetecter.h)
 
 target_link_libraries(ObjectDetecter tensorflow_cc
         tensorflow_framework ${PROTOBUF_LIBRARIES}

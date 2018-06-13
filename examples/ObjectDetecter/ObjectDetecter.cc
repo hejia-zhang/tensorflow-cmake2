@@ -1,5 +1,5 @@
 #include "Poco/Notification.h"
-#include "ObjectDetectThread.h"
+#include "ObjectDetecter.h"
 #include "opencv2/core.hpp"
 
 /**************************************** These functions are used in TF *******************************************/
@@ -116,7 +116,7 @@ tensorflow::Status LoadGraph(const std::string& graph_path, std::unique_ptr<tens
   return tensorflow::Status::OK();
 }
 
-void ObjectDetectThread::load_lable_map(std::map<int, std::string>& labelMap, const std::string& label_map_path) {
+void ObjectDetecter::load_lable_map(std::map<int, std::string>& labelMap, const std::string& label_map_path) {
   std::ifstream fin(label_map_path);
   std::string tmp_str = "";
   std::string name = "";
@@ -160,7 +160,7 @@ void ObjectDetectThread::load_lable_map(std::map<int, std::string>& labelMap, co
 }
 /****************************************************************************************************************/
 
-int ObjectDetectThread::Detect(const ImageFrame &imgFrame) {
+int ObjectDetecter::Detect(const ImageFrame &imgFrame) {
   std::string label_path = "/home/hjzh/PycharmProjects/tflearn/auv_data/auv_label_map.pbtxt";
 
   std::string input_layer = "image_tensor:0";
@@ -231,7 +231,7 @@ public:
   ImageFrame m_frame;
 };
 
-TF_ERR ObjectDetectThread::Init() {
+TF_ERR ObjectDetecter::Init() {
   m_logger.information("Begin to initialize the TF Session...");
   m_logger.information(Poco::format("graph_path: %s", m_config.m_szGraphPath));
   m_logger.information(Poco::format("label map path: %s", m_config.m_szLabelPath));
@@ -246,7 +246,7 @@ TF_ERR ObjectDetectThread::Init() {
   /// Now load graph!
   tensorflow::Status load_graph_status = LoadGraph(m_config.m_szGraphPath, m_session);
   if (!load_graph_status.ok()) {
-    m_logger.error(Poco::format("ObjectDetectThread::Init() LoadGraph Error!!! Error Msg: %s",
+    m_logger.error(Poco::format("ObjectDetecter::Init() LoadGraph Error!!! Error Msg: %s",
                                 load_graph_status.ToString()));
     return RES_TF_LOAD_GRAPH;
   }
@@ -263,7 +263,7 @@ TF_ERR ObjectDetectThread::Init() {
   return RES_TF_OK;
 }
 
-void ObjectDetectThread::run() {
+void ObjectDetecter::run() {
   for (;;) {
     if (m_stop) {
       break;
@@ -320,17 +320,17 @@ void ObjectDetectThread::run() {
       /// show us the image
       cv::imshow("Preview", pWorkNf->m_frame.m_img);
     } catch (const std::exception& e) {
-      m_logger.error("ObjectDetectThread::run: Something bad happened! %s", e.what());
+      m_logger.error("ObjectDetecter::run: Something bad happened! %s", e.what());
     }
   }
 }
 
 /// It will be used as VideoStreamDecodeThread's callback function
-void ObjectDetectThread::AddFrame(const ImageFrame& vf) {
+void ObjectDetecter::AddFrame(const ImageFrame& vf) {
   m_notiQueue.enqueueNotification(new FrameNotification(vf));
 }
 
-void ObjectDetectThread::Start(const std::function<ResultCBFunc> &cb) {
+void ObjectDetecter::Start(const std::function<ResultCBFunc> &cb) {
   m_cb = cb;
   /// First check if the thread is running
   if (m_thread.isRunning()) {
@@ -340,7 +340,7 @@ void ObjectDetectThread::Start(const std::function<ResultCBFunc> &cb) {
   m_thread.start(*this);
 }
 
-void ObjectDetectThread::Start() {
+void ObjectDetecter::Start() {
   /// First check if the thread is running
   if (m_thread.isRunning()) {
     return;
@@ -349,7 +349,7 @@ void ObjectDetectThread::Start() {
   m_thread.start(*this);
 }
 
-void ObjectDetectThread::Exit() {
+void ObjectDetecter::Exit() {
   m_stop = true;
   m_notiQueue.clear();
   m_notiQueue.wakeUpAll();

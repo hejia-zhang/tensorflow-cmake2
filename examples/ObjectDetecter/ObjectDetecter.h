@@ -30,13 +30,13 @@
 
 using ResultCBFunc = void();
 
-class ObjectDetectThread : public Poco::Runnable, public Poco::RefCountedObject{
+class ObjectDetecter : public Poco::Runnable, public Poco::RefCountedObject{
 public:
-  typedef Poco::AutoPtr<ObjectDetectThread> Ptr;
+  typedef Poco::AutoPtr<ObjectDetecter> Ptr;
 
-  ObjectDetectThread(const AppConfig& config, Poco::Logger& logger) : m_config(config), m_logger(logger){
+  ObjectDetecter(const AppConfig& config, Poco::Logger& logger) : m_config(config), m_logger(logger){
   }
-  virtual ~ObjectDetectThread() {
+  virtual ~ObjectDetecter() {
     if (m_thread.isRunning()) {
       Exit();
     }
